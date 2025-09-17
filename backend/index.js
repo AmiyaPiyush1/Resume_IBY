@@ -3,7 +3,8 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import multer from 'multer';
 import axios from 'axios';
-import puppeteer from 'puppeteer';
+import puppeteer from 'puppeteer-core';
+import chromium from '@sparticuz/chromium';
 import { createRequire } from 'module';
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
@@ -15,7 +16,7 @@ const app = express();
 const port = process.env.PORT || 5001;
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const model = genAI.getGenerativeModel({ model: 'gemini-2.5-flash' });
+const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
 const jsearchConfig = {
     headers: {
         'x-rapidapi-key': process.env.SEARCH_API_KEY,
@@ -71,6 +72,12 @@ Output strictly in JSON format.
 
 app.use(cors());
 app.use(express.json({ limit: '10mb' }));
+app.use(cors({
+    origin: [
+        'https://resumebuilderbackend.web.app',
+        'http://localhost:3000'
+    ]
+}));
 const upload = multer({ storage: multer.memoryStorage() });
 
 const runAgent = async (prompt) => {
@@ -161,11 +168,17 @@ app.get('/api/search-jobs', async (req, res) => {
 app.post('/api/generate-pdf', async (req, res) => {
     try {
         const { htmlContent } = req.body;
-        const browser = await puppeteer.launch({ args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+        const browser = await puppeteer.launch({
+            args: chromium.args,
+            executablePath: await chromium.executablePath(),
+            headless: chromium.headless,
+        });
+
         const page = await browser.newPage();
         await page.setContent(htmlContent, { waitUntil: 'networkidle0' });
         const pdfBuffer = await page.pdf({ format: 'A4', printBackground: true, margin: { top: '20px', right: '20px', bottom: '20px', left: '20px' } });
         await browser.close();
+        
         res.setHeader('Content-Type', 'application/pdf');
         res.setHeader('Content-Disposition', 'attachment; filename=Tailored-Resume.pdf');
         res.send(pdfBuffer);
