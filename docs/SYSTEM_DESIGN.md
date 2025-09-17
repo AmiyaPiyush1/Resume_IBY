@@ -130,7 +130,7 @@ SuggestedJobs: A component that displays the list of jobs returned from the serv
 
 
 
-**Google Gemini (LLM):** Chosen for its advanced reasoning and instruction-following capabilities, which are essential for the multi-agent (Extractor, Planner, Executor) system. The gemini-1.5-flash model provides a great balance of speed and performance for a real-time user experience.
+**Google Gemini (LLM):** Chosen for its advanced reasoning and instruction-following capabilities, which are essential for the multi-agent (Extractor, Planner, Executor) system. The gemini-2.5-flash model provides a great balance of speed and performance for a real-time user experience.
 
 
 
